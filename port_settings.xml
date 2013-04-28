@@ -1,0 +1,7 @@
+<port-settings>
+    <port-name value="dev/rfcomm0" />
+    <baud-rate value="9600" />
+    <data-bits value="8" />
+    <parity value="None" />
+    <stop-bits value="1" />
+</port-settings>

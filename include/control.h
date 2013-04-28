@@ -26,7 +26,7 @@ public:
 private:
     SerialPort* port_;
 
-    const QString PORT_SETTINGS_ = "xmlc.xml";
+    const QString PORT_SETTINGS_ = "port_settings.xml";
 
 signals:
     void out(const QString& str);

@@ -1,4 +1,5 @@
 #include "control.h"
+#include "exception.h"
 #include "qextserialport_utils.h"
 
 #include <QStringList>
@@ -51,47 +52,23 @@ void Control::parseInput(const UserInput& input)
         }
         else if (property == "baud-rate")
         {
-            BaudRateType type = utils::toBaudRateType(value);
-
-            if (type == BAUDINVALID)
-                throw ControlException("Error: Invalid baud rate '" + value + "'.");
-
-            port_->setBaudRate(type);
+            port_->setBaudRate(utils::toBaudRateType(value));
             emit out("Setting baud rate to " + value + ".");
         }
         else if (property == "data-bits")
         {
-            DataBitsType type = utils::toDataBitsType(value);
-
-            if (type == DATAINVALID)
-                throw ControlException("Error: Invalid number of data bits '" + value + "'.");
-
-            port_->setDataBits(type);
+            port_->setDataBits(utils::toDataBitsType(value));
             emit out("Setting number of data bits to " + value + ".");
         }
         else if (property == "parity")
         {
-            ParityType type = utils::toParityType(value);
-
-            if (type == PARINVALID)
-                throw ControlException("Error: Invalid parity '" + value + "'.");
-
-            port_->setParity(type);
+            port_->setParity(utils::toParityType(value));
             emit out("Setting parity to " + value + ".");
         }
         else if (property == "stop-bits")
         {
-            StopBitsType type = utils::toStopBitsType(value);
-
-            if (type == STOPINVALID)
-                throw ControlException("Error: Invalid number of stop bits '" + value + "'.");
-
-            port_->setStopBits(type);
+            port_->setStopBits(utils::toStopBitsType(value));
             emit out("Setting number of stop bits to " + value + ".");
         }
-    }
-    else if (command == "clear")
-    {
-
     }
 }

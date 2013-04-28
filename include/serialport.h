@@ -3,8 +3,15 @@
 
 #include <QString>
 #include <QObject>
+#include <stdexcept>
 
 #include "qextserialport.h"
+
+class SerialPortException : public std::logic_error
+{
+public:
+    SerialPortException(const QString& str) : std::logic_error(str.toStdString()) { }
+};
 
 class SerialPort : public QObject
 {
@@ -48,9 +55,6 @@ private:
     QextSerialPort* port_;
     PortSettings port_settings_;
     const int TIMEOUT = 500;
-
-    void setupConnections();
-    void parsePortSettings(const QString& baud_rate, const QString& data_bits, const QString& parity, const QString& stop_bits);
 
 signals:
     void readyRead();

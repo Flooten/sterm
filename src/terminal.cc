@@ -15,7 +15,7 @@ Terminal::Terminal(QWidget *parent)
     {
         control_ = new Control(this);
     }
-    catch (XmlException &e)
+    catch (std::logic_error &e)
     {
         qDebug() << e.what();
         exit(-1);
@@ -37,8 +37,21 @@ void Terminal::parseInput()
 
     if (input.isValid())
     {
-        try { control_->parseInput(input); }
-        catch (ControlException& e) { out(e.what()); }
+        QString command = input.command();
+
+        if (command == "clear")
+        {
+            ui->textEdit->clear();
+        }
+        else if (command == "exit")
+        {
+            exit(0);
+        }
+        else
+        {
+            try { control_->parseInput(input); }
+            catch (std::logic_error& e) { out(e.what()); }
+        }
     }
     else
     {

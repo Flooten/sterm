@@ -8,14 +8,16 @@ SerialPort::SerialPort(const QString& port_name,
                        const QString& stop_bits,
                        QObject *parent)
     : QObject(parent)
+    , port_(new QextSerialPort())
 {
-    // Specifikationer
-    parsePortSettings(baud_rate, data_bits, parity, stop_bits);
+    setPortName(port_name);
+    setBaudRate(utils::toBaudRateType(baud_rate));
+    setDataBits(utils::toDataBitsType(data_bits));
+    setParity(utils::toParityType(parity));
+    setStopBits(utils::toStopBitsType(stop_bits));
 
-    // Skapa en port med ovanstående specifikationer
-    port_ = new QextSerialPort(port_name, port_settings_, QextSerialPort::EventDriven);
+    connect(port_, SIGNAL(readyRead()), this, SLOT(readyReadRelay()));
 
-    setupConnections();
     port_->setTimeout(TIMEOUT);
 }
 
@@ -26,8 +28,8 @@ SerialPort::~SerialPort()
 }
 
 /*
-     *  Public
-     */
+ *  Public
+ */
 
 /* Öppna porten */
 bool SerialPort::open()
@@ -96,22 +98,34 @@ void SerialPort::setPortName(const QString& port_name)
 }
 
 void SerialPort::setBaudRate(BaudRateType baud_rate)
-{
+{    
+    if (baud_rate == BAUDINVALID)
+        throw SerialPortException("Error: Invalid baud rate.");
+
     port_->setBaudRate(baud_rate);
 }
 
 void SerialPort::setDataBits(DataBitsType data_bits)
 {
+    if (data_bits == DATAINVALID)
+        throw SerialPortException("Error: Invalid number of data bits.");
+
     port_->setDataBits(data_bits);
 }
 
 void SerialPort::setParity(ParityType parity)
 {
+    if (parity == PARINVALID)
+        throw SerialPortException("Error: Invalid parity.");
+
     port_->setParity(parity);
 }
 
 void SerialPort::setStopBits(StopBitsType stop_bits)
 {
+    if (stop_bits == STOPINVALID)
+        throw SerialPortException("Error: Invalid number of stop bits.");
+
     port_->setStopBits(stop_bits);
 }
 
@@ -145,33 +159,8 @@ qint64 SerialPort::bytesAvailable() const
 }
 
 /*
-     *  Private
-     */
-void SerialPort::setupConnections()
-{
-    connect(port_, SIGNAL(readyRead()), this, SLOT(readyReadRelay()));
-}
-
-void SerialPort::parsePortSettings(const QString& baud_rate, const QString& data_bits, const QString& parity, const QString& stop_bits)
-{
-    // LÄGG TILL ERRORHANTERING
-
-    // Sätt baudrate
-    port_settings_.BaudRate = utils::toBaudRateType(baud_rate);
-
-    // Sätt antal databitar
-    port_settings_.DataBits = utils::toDataBitsType(data_bits);
-
-    // Sätt paritet
-    port_settings_.Parity = utils::toParityType(parity);
-
-    // Sätt antal stoppbitar
-    port_settings_.StopBits = utils::toStopBitsType(stop_bits);
-}
-
-/*
-     *  Slots
-     */
+ *  Slots
+ */
 void SerialPort::readyReadRelay()
 {
     emit readyRead();
