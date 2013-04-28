@@ -1,6 +1,9 @@
 #include "terminal.h"
 #include "ui_terminal.h"
 #include "userinput.h"
+#include "xmlcontrol.h"
+
+#include <QDebug>
 
 Terminal::Terminal(QWidget *parent)
     : QDialog(parent)
@@ -8,7 +11,18 @@ Terminal::Terminal(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->lineEdit, SIGNAL(returnPressed()), this, SLOT(parseCommand()));
+    try
+    {
+        control_ = new Control(this);
+    }
+    catch (XmlException &e)
+    {
+        qDebug() << e.what();
+        exit(-1);
+    }
+
+    connect(ui->lineEdit, SIGNAL(returnPressed()), this, SLOT(parseInput()));
+    connect(control_, SIGNAL(out(QString)), this, SLOT(out(QString)));
 }
 
 Terminal::~Terminal()
@@ -17,20 +31,25 @@ Terminal::~Terminal()
 }
 
 /* Ta hand om ny userinput */
-void Terminal::parseCommand()
+void Terminal::parseInput()
 {
     UserInput input(ui->lineEdit->text());
 
     if (input.isValid())
-        out("Valid input.");
+    {
+        try { control_->parseInput(input); }
+        catch (ControlException& e) { out(e.what()); }
+    }
     else
-        out("Invalid input.");
+    {
+        out("Invalid or incomplete command '" + input.command() + "'.");
+    }
 
     ui->lineEdit->clear();
 }
 
 /* Skriver till terminalfönstret */
-void Terminal::out(const QString &str)
+void Terminal::out(const QString& str)
 {
     ui->textEdit->append(str);
 }

@@ -10,7 +10,13 @@ class SerialPort : public QObject
 {
     Q_OBJECT
 public:
-    SerialPort(const QString& port_name, const QString& baud_rate, const QString& data_bits, const QString& parity, const QString& stop_bits, QObject *parent = nullptr);
+    SerialPort(const QString& port_name,
+               const QString& baud_rate,
+               const QString& data_bits,
+               const QString& parity,
+               const QString& stop_bits,
+               QObject *parent = nullptr);
+
     ~SerialPort();
 
     QString portName() const;

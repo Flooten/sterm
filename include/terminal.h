@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QString>
 
+#include "control.h"
+
 namespace Ui
 {
     class Terminal;
@@ -19,9 +21,10 @@ public:
     
 private:
     Ui::Terminal *ui;
+    Control* control_;
 
 private slots:
-    void parseCommand();
+    void parseInput();
     void out(const QString& str);
 };
 

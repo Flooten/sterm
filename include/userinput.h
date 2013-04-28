@@ -13,9 +13,11 @@ public:
     UserInput(const QString &input);
 
     bool isValid() const;
+    QString command() const;
     QStringList arguments() const;
 
 private:
+
     bool valid_ = false;
     QString command_;
     QStringList arguments_;

@@ -2,15 +2,31 @@
 #define CONTROL_H
 
 #include "serialport.h"
-#include <QString>
+#include "xmlcontrol.h"
+#include "userinput.h"
 
-class Control
+#include <QObject>
+#include <QString>
+#include <stdexcept>
+
+class ControlException : public std::logic_error
 {
 public:
-    Control();
+    ControlException(const QString& str) : std::logic_error(str.toStdString()) { }
+};
+
+class Control : public QObject
+{
+    Q_OBJECT
+
+public:
+    Control(QObject* parent = nullptr);
+    void parseInput(const UserInput& input);
 
 private:
     SerialPort* port_;
+
+    const QString PORT_SETTINGS_ = "xmlc.xml";
 
 signals:
     void out(const QString& str);

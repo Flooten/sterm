@@ -4,8 +4,8 @@ UserInput::UserInput(const QString& input)
 {
     addAllowedInput();
 
-    QString tmp = input;
-    validateInput(tmp);
+    QString validation_copy = input;
+    validateInput(validation_copy);
 
     arguments_ = input.split(" ");
 
@@ -19,6 +19,11 @@ UserInput::UserInput(const QString& input)
 bool UserInput::isValid() const
 {
     return valid_;
+}
+
+QString UserInput::command() const
+{
+    return command_;
 }
 
 QStringList UserInput::arguments() const
@@ -39,6 +44,7 @@ void UserInput::addAllowedInput()
     allowed_input_.push_back(QRegExp("exit(\\s+)?"));
     allowed_input_.push_back(QRegExp("status(\\s+)?"));
     allowed_input_.push_back(QRegExp("set(\\s+)?(port-name|baud-rate|data-bits|parity|stop-bits)\\s+\\S+"));
+    allowed_input_.push_back(QRegExp("clear(\\s+)?"));
 }
 
 void UserInput::validateInput(QString& input)
