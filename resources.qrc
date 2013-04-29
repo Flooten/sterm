@@ -1,3 +1,5 @@
 <RCC>
-    <qresource prefix="/data"/>
+    <qresource prefix="/data">
+        <file>resources/sterm.xml</file>
+    </qresource>
 </RCC>

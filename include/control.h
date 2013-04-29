@@ -21,12 +21,17 @@ class Control : public QObject
 
 public:
     Control(QObject* parent = nullptr);
+    ~Control();
+
     void parseInput(const UserInput& input);
 
 private:
     SerialPort* port_;
+    XmlControl* port_settings_;
+    XmlControl* sterm_settings_;
 
     const QString PORT_SETTINGS_ = "port_settings.xml";
+    const QString STERM_SETTINGS_ = ":/data/resources/sterm.xml";
 
 signals:
     void out(const QString& str);

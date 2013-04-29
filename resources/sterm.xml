@@ -1,0 +1,48 @@
+<sterm_settings>
+
+<welcome_message>Welcome to Mazeter Control v0.1.
+Type 'help' for a list of available commands.</welcome_message>
+
+<help_general>Available commands:
+clear             : Clears the terminal.
+close             : Closes the serial port.
+exit              : Exits the application.
+help              : Prints this message.
+help (command)    : Prints the help text for (command) if available.
+open              : Opens the serial port.
+read (filename)   : Reads the file (filename) and interprets every line
+                  : as entered commands.
+set (var) (val)   : Sets the value of the varialble (var) to (val).
+status            : Provides a short status summary of the connection.
+transmit (msg)    : Transmit the message (msg).
+ffconfig          : Enters or exits Firefly configuration mode.</help_general>
+
+<help_set>set (var) (val)     : Sets the value of the varialble (var) to (val).
+
+The following arguments var are accepted:
+port-name           : Set the name of the serial port to val.
+baud-rate,  1200    : Set the baud rate of the serial port to val.
+            2400    
+            9600
+            19200
+            38400
+            57600
+            115200
+data-bits,  5       : Set the number of data bits of the serial port to val.
+            6
+            7
+            8
+parity=     even
+            odd
+            space
+            none
+stop-bits,  1       : Set the number of stop bits of the serial port to val.
+            2</help_set>
+
+<help_transmit>transmit (tmit) msg     : Transmits the message 'msg'. Everything given after the
+                        : transmit command is sent if the serial port is open. To 
+                        : transmit bytes in binary prepend '0b'. Anything else is
+                        : interpreted as hexadecimal input and therefore must be an
+                        : even number of characters.</help_transmit>
+
+</sterm_settings>

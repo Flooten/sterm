@@ -16,7 +16,12 @@ class XmlControl
 {
 public:
     XmlControl(const QString& xmlfile);
+
     QString attributeValue(const QString& node_name, const QString& attribute);
+    void setAttributeValue(const QString& node_name, const QString& attribute, const QString& value);
+
+    QString text(const QString& parent_node_name);
+    void setText(const QString& parent_node_name, const QString& text);
 
 private:
     QString filename_;

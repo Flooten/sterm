@@ -1,11 +1,11 @@
 #ifndef SERIALPORT_H
 #define SERIALPORT_H
 
+#include "qextserialport.h"
+
 #include <QString>
 #include <QObject>
 #include <stdexcept>
-
-#include "qextserialport.h"
 
 class SerialPortException : public std::logic_error
 {

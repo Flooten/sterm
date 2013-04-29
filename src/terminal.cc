@@ -15,7 +15,7 @@ Terminal::Terminal(QWidget *parent)
     {
         control_ = new Control(this);
     }
-    catch (std::logic_error &e)
+    catch (std::logic_error& e)
     {
         qDebug() << e.what();
         exit(-1);
@@ -64,5 +64,5 @@ void Terminal::parseInput()
 /* Skriver till terminalfönstret */
 void Terminal::out(const QString& str)
 {
-    ui->textEdit->append(str);
+    ui->textEdit->append(str + '\n');
 }

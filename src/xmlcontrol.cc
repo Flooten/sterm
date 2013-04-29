@@ -25,6 +25,52 @@ QString XmlControl::attributeValue(const QString &node_name, const QString& attr
         throw XmlException("XML error: Could not find the correct node.");
 }
 
+void XmlControl::setAttributeValue(const QString& node_name, const QString& attribute, const QString& value)
+{
+    QDomNode node = findNode(document_.firstChild(), node_name);
+
+    if (node.isElement())
+        node.toElement().setAttribute(attribute, value);
+    else
+        throw XmlException("XML error: Could not find the correct node.");
+
+    write();
+}
+
+QString XmlControl::text(const QString& parent_node_name)
+{
+    QDomNode node = findNode(document_.firstChild(), parent_node_name).firstChild();
+
+    while (!node.isNull())
+    {
+        if (node.isText())
+            return node.toText().data();
+
+        node = node.nextSibling();
+    }
+
+    throw XmlException("XML error: Could not find the correct node.");
+}
+
+void XmlControl::setText(const QString& parent_node_name, const QString& text)
+{
+    QDomNode node = findNode(document_.firstChild(), parent_node_name).firstChild();
+
+    while (!node.isNull())
+    {
+        if (node.isText())
+        {
+            node.toText().setData(text);
+            write();
+            return;
+        }
+
+        node = node.nextSibling();
+    }
+
+    throw XmlException("XML error: Could not find the correct node.");
+}
+
 /*
  *  Private
  */
