@@ -1,4 +1,2 @@
-sterm
-=====
-
- 
+STerm is a simple application which provides a terminal-like interface for communication over a serial port.
+The application depends on Qt5 and the library QextSerialPort, released under the MIT license and available from: code.google.com/p/qextserialport/
