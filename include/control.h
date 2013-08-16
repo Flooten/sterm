@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QByteArray>
 #include <stdexcept>
 
 class ControlException : public std::logic_error
@@ -29,6 +30,7 @@ private:
     SerialPort* port_;
     XmlControl* port_settings_;
     XmlControl* sterm_settings_;
+    QByteArray data_;
 
     const QString PORT_SETTINGS_ = "port_settings.xml";
     const QString STERM_SETTINGS_ = ":/data/resources/sterm.xml";

@@ -31,9 +31,9 @@ void Control::parseInput(const UserInput& input)
     if (command == "help")
     {
         if (arguments.isEmpty())
-            out(sterm_settings_->text("help_general"));
+            emit out(sterm_settings_->text("help_general"));
         else
-            out(sterm_settings_->text("help_" + arguments.at(0)));
+            emit out(sterm_settings_->text("help_" + arguments.at(0)));
     }
     else if (command == "transmit" || command == "tmit")
     {
@@ -41,15 +41,28 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "open")
     {
-
+        if (port_->open())
+            emit out("Port " + port_->portName() + " opened.");
+        else
+            emit out("Unable to open port " + port_->portName() + ".");
     }
     else if (command == "close")
     {
+        port_->close();
 
+        if (!port_->isOpen())
+            emit out("Port " + port_->portName() + " closed.");
+        else
+            emit out("Unable to close port " + port_->portName() + ".");
     }
     else if (command == "status")
     {
-
+        emit out("Port name: \t\t" + port_->portName() +
+                 "\nPort status:\t" + port_->state() +
+                 "\nBaud rate: \t\t" + utils::toString(port_->baudRate()) +
+                 "\nData bits: \t\t" + utils::toString(port_->dataBits()) +
+                 "\nParity: \t\t" + utils::toString(port_->parity()) +
+                 "\nStop bits: \t\t" + utils::toString(port_->stopBits()));
     }
     else if (command == "set")
     {
