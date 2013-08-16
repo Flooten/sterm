@@ -37,7 +37,66 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "transmit" || command == "tmit")
     {
+        if (port_->isOpen())
+        {
+            if (arguments.at(0).startsWith("0x"))
+            {
+                // Tolka som hexadecimalt
+                QByteArray message;
 
+                for (int i = 0; i < arguments.count(); ++i)
+                {
+                    // Gå igenom alla angivna argument.
+                    QString arg = arguments.at(i);
+                    arg.remove("0x");
+
+                    // Stöd för ej byteseparerad input.
+                    if (arg.length() % 2 == 0)
+                    {
+                        // Jämnt antal tecken.
+                        for (int i = 0; i < arg.length(); i += 2)
+                        {
+                            bool partial_ok;
+                            QString partial_string = arg.mid(i, 2);
+
+                            int partial_hex = partial_string.toInt(&partial_ok, 16);
+
+                            if (partial_ok)
+                            {
+                                message.append(partial_hex);
+                            }
+                            else
+                            {
+                                emit out("Error: Not a valid hex input.");
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        emit out("Not an even number of characters.");
+                        return;
+                    }
+                }
+
+                emit out("Transmitting... ");
+                emit out("Raw data: " + utils::readableByteArray(message.toHex()));
+                port_->transmit(message);
+            }
+            else
+            {
+                // Tolka som ASCII
+                QString message = arguments.join(' ');
+
+                emit out("Transmitting...\nRaw data: " + message);
+
+                port_->transmit(message);
+            }
+        }
+        else
+        {
+            emit out("Unable to transmit: The port is closed.");
+        }
     }
     else if (command == "open")
     {

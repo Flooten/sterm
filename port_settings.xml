@@ -1,5 +1,5 @@
 <port-settings>
- <port-name value="COM2"/>
+ <port-name value="COM3"/>
  <baud-rate value="9600"/>
  <data-bits value="8"/>
  <parity value="None"/>
