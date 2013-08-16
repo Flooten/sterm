@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QString>
 #include <QByteArray>
+#include <QTimer>
 #include <stdexcept>
 
 class ControlException : public std::logic_error
@@ -32,11 +33,19 @@ private:
     XmlControl* sterm_settings_;
     QByteArray data_;
 
+    QTimer* timer_;
+
     const QString PORT_SETTINGS_ = "port_settings.xml";
     const QString STERM_SETTINGS_ = ":/data/resources/sterm.xml";
+    const int TIMER_VALUE = 1000;
+
+    void printData(const QByteArray& data);
 
 signals:
     void out(const QString& str);
+
+private slots:
+    void readData();
 };
 
 #endif // CONTROL_H

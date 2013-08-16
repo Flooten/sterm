@@ -5,6 +5,7 @@
 
 Control::Control(QObject* parent)
     : QObject(parent)
+    , timer_(new QTimer())
 {
     sterm_settings_ = new XmlControl(STERM_SETTINGS_);
 
@@ -15,6 +16,10 @@ Control::Control(QObject* parent)
                            port_settings_->attributeValue("data-bits", "value"),
                            port_settings_->attributeValue("parity", "value"),
                            port_settings_->attributeValue("stop-bits", "value"));
+
+    connect(timer_, SIGNAL(timeout()), this, SLOT(readData()));
+
+    timer_->start(TIMER_VALUE);
 }
 
 Control::~Control()
@@ -79,8 +84,7 @@ void Control::parseInput(const UserInput& input)
                     }
                 }
 
-                emit out("Transmitting... ");
-                emit out("Raw data: " + utils::readableByteArray(message.toHex()));
+                emit out("Transmitting...\nRaw data: " + utils::readableByteArray(message.toHex()));
                 port_->transmit(message);
             }
             else
@@ -163,5 +167,30 @@ void Control::parseInput(const UserInput& input)
 
             emit out("Setting number of stop bits to " + value + ".");
         }
+    }
+}
+
+/* Skriver ut innehållet i data */
+void Control::printData(const QByteArray& data)
+{
+    emit out("Received " + QString::number(data.length()) + " bytes." + "\n" +
+             "ASCII:\t" + data + "\n" +
+             "Hex:\t" + utils::readableByteArray(data.toHex()));
+}
+
+/*
+ *  Private slots
+ */
+
+/* Läser data från portens buffer och skriver ut */
+void Control::readData()
+{
+    if (port_->isOpen() && port_->bytesAvailable() != 0)
+    {
+        data_.append(port_->readAll());
+
+        printData(data_);
+
+        data_.clear();
     }
 }
