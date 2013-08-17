@@ -10,7 +10,7 @@
 class SerialPortException : public std::logic_error
 {
 public:
-    SerialPortException(const QString& str) : std::logic_error(str.toStdString()) { }
+    SerialPortException(const QString& str) : std::logic_error(str.toStdString()) {}
 };
 
 class SerialPort : public QObject

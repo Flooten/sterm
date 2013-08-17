@@ -37,7 +37,7 @@ private:
 
     const QString PORT_SETTINGS_ = "port_settings.xml";
     const QString STERM_SETTINGS_ = ":/data/resources/sterm.xml";
-    const int TIMER_VALUE = 1000;
+    const int TIMER_VALUE = 500;
 
     void printData(const QByteArray& data);
 

@@ -4,18 +4,17 @@
 Type 'help' for a list of available commands.</welcome_message>
 
 <help_general>Available commands:
-clear             : Clears the terminal.
-close             : Closes the serial port.
-exit              : Exits the application.
-help              : Prints this message.
-help (command)    : Prints the help text for (command) if available.
-open              : Opens the serial port.
-read (filename)   : Reads the file (filename) and interprets every line
-                  : as entered commands.
-set (var) (val)   : Sets the value of the varialble (var) to (val).
-status            : Provides a short status summary of the connection.
-transmit (msg)    : Transmit the message (msg).
-ffconfig          : Enters or exits Firefly configuration mode.</help_general>
+clear                   : Clears the terminal.
+close                   : Closes the serial port.
+exit                    : Exits the application.
+help                    : Prints this message.
+help (command)          : Prints the help text for (command) if available.
+open                    : Opens the serial port.
+read (filename)         : Reads the file (filename) and interprets every line
+                        : as entered commands.
+set (var) (val)         : Sets the value of the varialble (var) to (val).
+status                  : Provides a short status summary of the connection.
+transmit/tmit (msg)     : Transmit the message (msg).</help_general>
 
 <help_set>set (var) (val)     : Sets the value of the varialble (var) to (val).
 

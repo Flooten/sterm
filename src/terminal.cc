@@ -4,6 +4,8 @@
 #include "xmlcontrol.h"
 
 #include <QDebug>
+#include <QKeyEvent>
+#include <QFile>
 
 Terminal::Terminal(QWidget *parent)
     : QDialog(parent)
@@ -21,19 +23,28 @@ Terminal::Terminal(QWidget *parent)
         exit(-1);
     }
 
-    connect(ui->lineEdit, SIGNAL(returnPressed()), this, SLOT(parseInput()));
+    connect(ui->lineEdit_command, SIGNAL(returnPressed()), this, SLOT(parseInput()));
+    connect(ui->lineEdit_command, SIGNAL(editingFinished()), this, SLOT(resetCurrentLine()));
     connect(control_, SIGNAL(out(QString)), this, SLOT(out(QString)));
+
+    ui->lineEdit_command->installEventFilter(this);
 }
 
 Terminal::~Terminal()
 {
+    delete control_;
     delete ui;    
 }
 
 /* Ta hand om ny userinput */
 void Terminal::parseInput()
 {
-    UserInput input(ui->lineEdit->text());
+    QString input_str = ui->lineEdit_command->text();
+
+    if (input_str.isEmpty())
+        return;
+
+    UserInput input(input_str);
 
     if (input.isValid())
     {
@@ -58,11 +69,86 @@ void Terminal::parseInput()
         out("Invalid or incomplete command '" + input.command() + "'.");
     }
 
-    ui->lineEdit->clear();
+    history_.prepend(input_str);
+    ui->lineEdit_command->clear();
 }
 
 /* Skriver till terminalfönstret */
 void Terminal::out(const QString& str)
 {
     ui->textEdit->append(str + '\n');
+}
+
+/* Filtrera knapptryckningar */
+bool Terminal::eventFilter(QObject* object, QEvent* event)
+{
+    if (object == ui->lineEdit_command)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+
+            switch (key_event->key())
+            {
+            case Qt::Key_Up:
+            {
+                if (history_.isEmpty())
+                    return false;
+
+                // Mot äldre kommandon
+                if (history_reset_)
+                {
+                    history_reset_ = false;
+                }
+                else
+                {
+                    if (current_line_ != history_.size() - 1)
+                    // Öka om ej sista elementet
+                        ++current_line_;
+                }
+
+                QString line = history_[current_line_].trimmed();
+                ui->lineEdit_command->setText(line);
+
+                return true;
+            }
+
+            case Qt::Key_Down:
+            {
+                if (history_.isEmpty())
+                    return false;
+
+                // Mot nyare kommandon
+                if (current_line_ != 0)
+                    // Minska om ej sista elementet
+                    --current_line_;
+                else
+                {
+                    // Rensa om sista raden
+                    ui->lineEdit_command->clear();
+                    return true;
+                }
+
+                QString line = history_[current_line_].trimmed();
+                ui->lineEdit_command->setText(line);
+
+                return true;
+            }
+
+            default:
+                return false;
+            }
+        }
+        else
+            // Hantera inte annat än knapptryckningar
+            return false;
+    }
+    else
+        return QDialog::eventFilter(object, event);
+}
+
+void Terminal::resetCurrentLine()
+{
+    history_reset_ = true;
+    current_line_ = 0;
 }

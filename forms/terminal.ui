@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Terminal</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QDialog{
@@ -37,7 +37,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="lineEdit">
+    <widget class="QLineEdit" name="lineEdit_command">
      <property name="focusPolicy">
       <enum>Qt::StrongFocus</enum>
      </property>
