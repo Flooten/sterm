@@ -28,6 +28,8 @@ Terminal::Terminal(QWidget *parent)
     connect(control_, SIGNAL(out(QString)), this, SLOT(out(QString)));
 
     ui->lineEdit_command->installEventFilter(this);
+
+    control_->printWelcomeMessage();
 }
 
 Terminal::~Terminal()

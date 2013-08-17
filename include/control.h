@@ -26,6 +26,7 @@ public:
     ~Control();
 
     void parseInput(const UserInput& input);
+    void printWelcomeMessage();
 
 private:
     SerialPort* port_;

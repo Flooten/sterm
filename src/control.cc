@@ -170,6 +170,11 @@ void Control::parseInput(const UserInput& input)
     }
 }
 
+void Control::printWelcomeMessage()
+{
+    emit out(sterm_settings_->text("welcome_message"));
+}
+
 /* Skriver ut innehållet i data */
 void Control::printData(const QByteArray& data)
 {
