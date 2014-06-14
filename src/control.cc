@@ -214,6 +214,10 @@ void Control::parseInput(const UserInput& input)
             ++index;
         }
 
+        // No ports found
+        if (index == 1)
+            emit out("No ports available.");
+
         emit out("");
     }
     else if (command == "autoclear")
