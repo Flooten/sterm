@@ -1,11 +1,12 @@
 #ifndef SERIALPORT_H
 #define SERIALPORT_H
 
-#include "qextserialport.h"
+//#include "qextserialport.h"
 
 #include <QString>
 #include <QObject>
 #include <stdexcept>
+#include <QtSerialPort/QSerialPort>
 
 class SerialPortException : public std::logic_error
 {
@@ -27,17 +28,17 @@ public:
     ~SerialPort();
 
     QString portName() const;
-    BaudRateType baudRate() const;
-    DataBitsType dataBits() const;
-    ParityType parity() const;
-    StopBitsType stopBits() const;
+    QSerialPort::BaudRate baudRate() const;
+    QSerialPort::DataBits dataBits() const;
+    QSerialPort::Parity parity() const;
+    QSerialPort::StopBits stopBits() const;
     QString state() const;
 
     void setPortName(const QString& port_name);
-    void setBaudRate(BaudRateType baud_rate);
-    void setDataBits(DataBitsType data_bits);
-    void setParity(ParityType parity);
-    void setStopBits(StopBitsType stop_bits);
+    void setBaudRate(QSerialPort::BaudRate baud_rate);
+    void setDataBits(QSerialPort::DataBits data_bits);
+    void setParity(QSerialPort::Parity parity);
+    void setStopBits(QSerialPort::StopBits stop_bits);
 
     bool open();
     void close();
@@ -52,8 +53,8 @@ public:
     qint64 bytesAvailable() const;
 
 private:
-    QextSerialPort* port_;
-    PortSettings port_settings_;
+//    QextSerialPort* port_;
+    QSerialPort* port_;
     const int TIMEOUT = 500;
 
 signals:

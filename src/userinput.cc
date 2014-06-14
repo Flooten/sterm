@@ -45,6 +45,7 @@ void UserInput::addAllowedInput()
     allowed_input_.push_back(QRegExp("status(\\s+)?"));
     allowed_input_.push_back(QRegExp("set(\\s+)?(port-name|baud-rate|data-bits|parity|stop-bits)\\s+\\S+"));
     allowed_input_.push_back(QRegExp("clear(\\s+)?"));
+    allowed_input_.push_back(QRegExp("info(\\s+)?"));
 }
 
 void UserInput::validateInput(QString& input)

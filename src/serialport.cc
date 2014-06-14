@@ -1,5 +1,6 @@
 #include "serialport.h"
-#include "qextserialport_utils.h"
+#include "serialport_utils.h"
+//#include "qextserialport_utils.h"
 
 SerialPort::SerialPort(const QString& port_name,
                        const QString& baud_rate,
@@ -8,17 +9,15 @@ SerialPort::SerialPort(const QString& port_name,
                        const QString& stop_bits,
                        QObject *parent)
     : QObject(parent)
-    , port_(new QextSerialPort())
+    , port_(new QSerialPort())
 {
     setPortName(port_name);
-    setBaudRate(utils::toBaudRateType(baud_rate));
-    setDataBits(utils::toDataBitsType(data_bits));
-    setParity(utils::toParityType(parity));
-    setStopBits(utils::toStopBitsType(stop_bits));
+    setBaudRate(utils::toBaudRate(baud_rate));
+    setDataBits(utils::toDataBits(data_bits));
+    setParity(utils::toParity(parity));
+    setStopBits(utils::toStopBits(stop_bits));
 
     connect(port_, SIGNAL(readyRead()), this, SLOT(readyReadRelay()));
-
-    port_->setTimeout(TIMEOUT);
 }
 
 SerialPort::~SerialPort()
@@ -63,22 +62,22 @@ QString SerialPort::portName() const
     return port_->portName();
 }
 
-BaudRateType SerialPort::baudRate() const
+QSerialPort::BaudRate SerialPort::baudRate() const
 {
-    return port_->baudRate();
+    return utils::toBaudRate(QString::number(port_->baudRate()));
 }
 
-DataBitsType SerialPort::dataBits()  const
+QSerialPort::DataBits SerialPort::dataBits()  const
 {
     return port_->dataBits();
 }
 
-ParityType SerialPort::parity() const
+QSerialPort::Parity SerialPort::parity() const
 {
     return port_->parity();
 }
 
-StopBitsType SerialPort::stopBits() const
+QSerialPort::StopBits SerialPort::stopBits() const
 {
     return port_->stopBits();
 }
@@ -97,33 +96,33 @@ void SerialPort::setPortName(const QString& port_name)
     port_->setPortName(port_name);
 }
 
-void SerialPort::setBaudRate(BaudRateType baud_rate)
+void SerialPort::setBaudRate(QSerialPort::BaudRate baud_rate)
 {    
-    if (baud_rate == BAUDINVALID)
+    if (baud_rate == QSerialPort::UnknownBaud)
         throw SerialPortException("Error: Invalid baud rate.");
 
     port_->setBaudRate(baud_rate);
 }
 
-void SerialPort::setDataBits(DataBitsType data_bits)
+void SerialPort::setDataBits(QSerialPort::DataBits data_bits)
 {
-    if (data_bits == DATAINVALID)
+    if (data_bits == QSerialPort::UnknownDataBits)
         throw SerialPortException("Error: Invalid number of data bits.");
 
     port_->setDataBits(data_bits);
 }
 
-void SerialPort::setParity(ParityType parity)
+void SerialPort::setParity(QSerialPort::Parity parity)
 {
-    if (parity == PARINVALID)
+    if (parity == QSerialPort::UnknownParity)
         throw SerialPortException("Error: Invalid parity.");
 
     port_->setParity(parity);
 }
 
-void SerialPort::setStopBits(StopBitsType stop_bits)
+void SerialPort::setStopBits(QSerialPort::StopBits stop_bits)
 {
-    if (stop_bits == STOPINVALID)
+    if (stop_bits == QSerialPort::UnknownStopBits)
         throw SerialPortException("Error: Invalid number of stop bits.");
 
     port_->setStopBits(stop_bits);

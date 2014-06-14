@@ -1,7 +1,9 @@
 #include "control.h"
-#include "qextserialport_utils.h"
+#include "serialport_utils.h"
 
 #include <QStringList>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 
 Control::Control(QObject* parent)
     : QObject(parent)
@@ -141,31 +143,42 @@ void Control::parseInput(const UserInput& input)
         }
         else if (property == "baud-rate")
         {
-            port_->setBaudRate(utils::toBaudRateType(value));
+            port_->setBaudRate(utils::toBaudRate(value));
             port_settings_->setAttributeValue(property, "value", value);
 
             emit out("Setting baud rate to " + value + ".");
         }
         else if (property == "data-bits")
         {
-            port_->setDataBits(utils::toDataBitsType(value));
+            port_->setDataBits(utils::toDataBits(value));
             port_settings_->setAttributeValue(property, "value", value);
 
             emit out("Setting number of data bits to " + value + ".");
         }
         else if (property == "parity")
         {
-            port_->setParity(utils::toParityType(value));
+            port_->setParity(utils::toParity(value));
             port_settings_->setAttributeValue(property, "value", value);
 
             emit out("Setting parity to " + value + ".");
         }
         else if (property == "stop-bits")
         {
-            port_->setStopBits(utils::toStopBitsType(value));
+            port_->setStopBits(utils::toStopBits(value));
             port_settings_->setAttributeValue(property, "value", value);
 
             emit out("Setting number of stop bits to " + value + ".");
+        }
+    }
+    else if (command == "info")
+    {
+        QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+
+        QListIterator<QSerialPortInfo> i(ports);
+
+        while (i.hasNext())
+        {
+            emit out(i.next().portName());
         }
     }
 }

@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-include(lib/qextserialport.pri)
+#include(lib/qextserialport.pri)
 
-QT       += core gui xml
+QT       += core gui xml serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,14 +21,16 @@ SOURCES += \
     src/userinput.cc \
     src/serialport.cc \
     src/control.cc \
-    src/xmlcontrol.cc
+    src/xmlcontrol.cc \
+    src/serialport_utils.cc
 
 HEADERS  += \
     include/terminal.h \
     include/userinput.h \
     include/serialport.h \
     include/control.h \
-    include/xmlcontrol.h
+    include/xmlcontrol.h \
+    include/serialport_utils.h
 
 FORMS    += \
     forms/terminal.ui
