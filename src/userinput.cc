@@ -17,6 +17,10 @@ UserInput::UserInput(const QString& input)
         command_ = arguments_.front();
         arguments_.pop_front();
     }
+    else
+    {
+        command_ = input;
+    }
 }
 
 bool UserInput::isValid() const
@@ -50,6 +54,7 @@ void UserInput::addAllowedInput()
     allowed_input_.push_back(QRegExp("clear(\\s+)?"));
     allowed_input_.push_back(QRegExp("lp(\\s+)?"));
     allowed_input_.push_back(QRegExp("autoclear(\\s+)?"));
+    allowed_input_.push_back(QRegExp("repeat\\s+((stop)|([0-9]+))((\\s+\\S+)+)?"));
 }
 
 void UserInput::validateInput(QString& input)

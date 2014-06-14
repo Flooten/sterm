@@ -8,6 +8,8 @@
 Control::Control(QObject* parent)
     : QObject(parent)
     , timer_(new QTimer())
+    , repeat_timer_(new QTimer())
+    , repeated_input_(new UserInput(""))
 {
     sterm_settings_ = new XmlControl(STERM_SETTINGS_);
 
@@ -20,14 +22,18 @@ Control::Control(QObject* parent)
                            port_settings_->attributeValue("stop-bits", "value"));
 
     connect(timer_, SIGNAL(timeout()), this, SLOT(readData()));
+    connect(repeat_timer_, SIGNAL(timeout()), this, SLOT(repeatInput()));
 
     timer_->start(TIMER_VALUE);
 }
 
 Control::~Control()
 {
-    delete port_;
     delete port_settings_;
+    delete timer_;
+    delete repeat_timer_;
+    delete repeated_input_;
+    delete port_;
 }
 
 void Control::parseInput(const UserInput& input)
@@ -110,18 +116,21 @@ void Control::parseInput(const UserInput& input)
     else if (command == "open")
     {
         if (port_->open())
-            emit out("Port " + port_->portName() + " opened.");
+            emit out("Port " + port_->portName() + " opened.\n");
         else
-            emit out("Unable to open port " + port_->portName() + ".");
+            emit out("Unable to open port " + port_->portName() + ".\n");
     }
     else if (command == "close")
     {
+        if (!port_->isOpen())
+            throw ControlException("Port " + port_->portName() + " is already closed.\n");
+
         port_->close();
 
         if (!port_->isOpen())
-            emit out("Port " + port_->portName() + " closed.");
+            emit out("Port " + port_->portName() + " closed.\n");
         else
-            emit out("Unable to close port " + port_->portName() + ".");
+            emit out("Unable to close port " + port_->portName() + ".\n");
     }
     else if (command == "status")
     {
@@ -137,7 +146,7 @@ void Control::parseInput(const UserInput& input)
     else if (command == "set")
     {
         if (port_->isOpen())
-            throw ControlException("Cannot set port properties while the port is open.");
+            throw ControlException("Cannot set port properties while the port is open.\n");
 
         QString property = arguments.at(0);
         QString value = arguments.at(1);
@@ -159,35 +168,35 @@ void Control::parseInput(const UserInput& input)
             port_->setPortName(value);
             port_settings_->setAttributeValue(property, "value", value);
 
-            emit out("Setting port name to " + value + ".");
+            emit out("Setting port name to " + value + ".\n");
         }
         else if (property == "baud-rate")
         {
             port_->setBaudRate(utils::toBaudRate(value));
             port_settings_->setAttributeValue(property, "value", value);
 
-            emit out("Setting baud rate to " + value + ".");
+            emit out("Setting baud rate to " + value + ".\n");
         }
         else if (property == "data-bits")
         {
             port_->setDataBits(utils::toDataBits(value));
             port_settings_->setAttributeValue(property, "value", value);
 
-            emit out("Setting number of data bits to " + value + ".");
+            emit out("Setting number of data bits to " + value + ".\n");
         }
         else if (property == "parity")
         {
             port_->setParity(utils::toParity(value));
             port_settings_->setAttributeValue(property, "value", value);
 
-            emit out("Setting parity to " + value + ".");
+            emit out("Setting parity to " + value + ".\n");
         }
         else if (property == "stop-bits")
         {
             port_->setStopBits(utils::toStopBits(value));
             port_settings_->setAttributeValue(property, "value", value);
 
-            emit out("Setting number of stop bits to " + value + ".");
+            emit out("Setting number of stop bits to " + value + ".\n");
         }
     }
     else if (command == "lp")
@@ -233,7 +242,44 @@ void Control::parseInput(const UserInput& input)
             emit out("Enabling autoclearing of the terminal.\n");
         }
     }
+    else if (command == "repeat")
+    {
+        // Repeat the command that is input as argument 1
+        // Argument 0 describes the repetition frequency in Hertz
+
+        QString primary_arg = arguments.at(0);
+
+        if (primary_arg == "stop")
+        {
+            repeat_timer_->stop();
+            emit out("Input repetition halted.\n");
+            return;
+        }
+        else
+        {
+            if (repeat_timer_->isActive())
+                throw ControlException("Unable to begin repetition. The command '" + repeated_input_->command() + "' is currently being repeated.\n");
+
+            bool ok;
+            int value = primary_arg.toInt(&ok, 10);
+
+            if (!ok)
+                throw ControlException("Not a valid repetition frequency.\n");
+
+            arguments.removeFirst();
+
+            repeated_input_ = new UserInput(arguments.join(" "));
+
+            if (!repeated_input_->isValid())
+                throw ControlException("Invalid or incomplete command '" + repeated_input_->command() + "'.\n");
+
+            repeat_timer_->start(1000 / value);
+
+            emit out("Repeating '" + arguments.join(" ") + "' with frequency " + QString::number(value) + " Hz.\n");
+        }
+    }
 }
+
 
 void Control::printWelcomeMessage()
 {
@@ -263,4 +309,11 @@ void Control::readData()
 
         data_.clear();
     }
+}
+
+/* Repeats the input in repeated_input_ as long as repeat_timer_ is running */
+void Control::repeatInput()
+{
+    try { parseInput(*repeated_input_); }
+    catch (std::logic_error& e) { emit out(e.what()); }
 }

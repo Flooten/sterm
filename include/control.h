@@ -34,6 +34,8 @@ private:
     XmlControl* sterm_settings_;
     QByteArray data_;
     QTimer* timer_;
+    QTimer* repeat_timer_;
+    UserInput* repeated_input_;
 
     bool static_mode_ = false;
 
@@ -49,6 +51,7 @@ signals:
 
 private slots:
     void readData();
+    void repeatInput();
 };
 
 #endif // CONTROL_H
