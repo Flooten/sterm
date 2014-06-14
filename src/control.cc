@@ -83,13 +83,13 @@ void Control::parseInput(const UserInput& input)
                             }
                             else
                             {
-                                throw ControlException("Error: Not a valid hex input.");
+                                throw ControlException("Error: Not a valid hex input.\n");
                             }
                         }
                     }
                     else
                     {
-                        throw ControlException("Not an even number of characters.");
+                        throw ControlException("Not an even number of characters.\n");
                     }
                 }
 
@@ -101,7 +101,7 @@ void Control::parseInput(const UserInput& input)
                 // Tolka som ASCII
                 QString message = arguments.join(' ');
 
-                emit out("Transmitting...\nRaw data: " + message);
+                emit out("Transmitting...\nRaw data: " + message + "\n");
 
                 port_->transmit(message);
             }
@@ -243,7 +243,7 @@ void Control::parseInput(const UserInput& input)
     else if (command == "repeat")
     {
         // Repeat the command that is input as argument 1
-        // Argument 0 describes the repetition frequency in Hertz
+        // Argument 0 describes the repetition frequency in Hertz (or stop)
 
         QString primary_arg = arguments.at(0);
 
@@ -276,6 +276,13 @@ void Control::parseInput(const UserInput& input)
             emit out("Repeating '" + arguments.join(" ") + "' with frequency " + QString::number(value) + " Hz.\n");
         }
     }
+    else if (command == "respond")
+    {
+        // Look for the message in argument 0.
+        // If found, respond with argument 1.
+
+        emit out("Response added. Responding to " + arguments.at(0) + " with " + arguments.at(1) + ".\n");
+    }
 }
 
 
@@ -284,7 +291,7 @@ void Control::printWelcomeMessage()
     emit out(sterm_settings_->text("welcome_message") + '\n');
 }
 
-/* Skriver ut innehållet i data */
+/* Prints the contents of data */
 void Control::printData(const QByteArray& data)
 {
     emit out("Received " + QString::number(data.length()) + " bytes." + "\n" +
@@ -296,7 +303,7 @@ void Control::printData(const QByteArray& data)
  *  Private slots
  */
 
-/* Läser data från portens buffer och skriver ut */
+/* Reads data from the port buffer and prints */
 void Control::readData()
 {
     if (port_->isOpen() && port_->bytesAvailable() != 0)

@@ -14,6 +14,8 @@ help (command)          : Prints the help text for (command) if available.
 lp                      : Lists the available ports on the system.
 open                    : Opens the serial port.
 read (filename)         : Reads the file (filename) and interprets every line as entered commands.
+repeat (stop/freq) (cmd): Repeats the command (cmd) with the frequency specified by (freq). The command
+                        : 'repeat stop' halts the repetition.
 set (var) (val)         : Sets the value of the varialble (var) to (val).
 status                  : Provides a short status summary of the connection.
 transmit/tmit (msg)     : Transmit the message (msg).</help_general>
