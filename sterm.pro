@@ -45,3 +45,5 @@ QMAKE_CXXFLAGS += -std=c++11
 
 RESOURCES += \
     resources.qrc
+
+RC_FILE = rcfile.rc

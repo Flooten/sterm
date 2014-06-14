@@ -41,7 +41,7 @@ void Control::parseInput(const UserInput& input)
     QString command = input.command();
     QStringList arguments = input.arguments();
 
-    if (static_mode_)
+    if (autoclear_)
         emit clear();
 
     if (command == "help")
@@ -231,14 +231,14 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "autoclear")
     {
-        if (static_mode_)
+        if (autoclear_)
         {
-            static_mode_ = false;
+            autoclear_ = false;
             emit out("Disabling autoclearing of the terminal.\n");
         }
         else
         {
-            static_mode_ = true;
+            autoclear_ = true;
             emit out("Enabling autoclearing of the terminal.\n");
         }
     }

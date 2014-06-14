@@ -37,7 +37,7 @@ private:
     QTimer* repeat_timer_;
     UserInput* repeated_input_;
 
-    bool static_mode_ = false;
+    bool autoclear_ = false;
 
     const QString PORT_SETTINGS_ = "port_settings.xml";
     const QString STERM_SETTINGS_ = ":/data/resources/sterm.xml";
