@@ -7,13 +7,16 @@ UserInput::UserInput(const QString& input)
     QString validation_copy = input;
     validateInput(validation_copy);
 
-    arguments_ = input.split(" ");
+    if (valid_)
+    {
+        arguments_ = input.split(" ");
 
-    // Ta bort eventuella ws
-    arguments_.removeAll("");
+        // Ta bort eventuella ws
+        arguments_.removeAll("");
 
-    command_ = arguments_.front();
-    arguments_.pop_front();
+        command_ = arguments_.front();
+        arguments_.pop_front();
+    }
 }
 
 bool UserInput::isValid() const

@@ -41,9 +41,9 @@ void Control::parseInput(const UserInput& input)
     if (command == "help")
     {
         if (arguments.isEmpty())
-            emit out(sterm_settings_->text("help_general"));
+            emit out(sterm_settings_->text("help_general") + '\n');
         else
-            emit out(sterm_settings_->text("help_" + arguments.at(0)));
+            emit out(sterm_settings_->text("help_" + arguments.at(0)) + '\n');
     }
     else if (command == "transmit" || command == "tmit")
     {
@@ -136,11 +136,26 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "set")
     {
+        if (port_->isOpen())
+            throw ControlException("Cannot set port properties while the port is open.");
+
         QString property = arguments.at(0);
         QString value = arguments.at(1);
 
         if (property == "port-name")
         {
+            // Verify that the port exists
+            QListIterator<QSerialPortInfo> i(QSerialPortInfo::availablePorts());
+
+            bool exists = false;
+
+            while (i.hasNext())
+                if (value == i.next().portName())
+                    exists = true;
+
+            if (!exists)
+                throw ControlException("The port '" + value + "' does not exist. Use 'lp' to list available serial ports.\n");
+
             port_->setPortName(value);
             port_settings_->setAttributeValue(property, "value", value);
 
