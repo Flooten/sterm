@@ -83,19 +83,17 @@ void Control::parseInput(const UserInput& input)
                             }
                             else
                             {
-                                emit out("Error: Not a valid hex input.");
-                                return;
+                                throw ControlException("Error: Not a valid hex input.");
                             }
                         }
                     }
                     else
                     {
-                        emit out("Not an even number of characters.");
-                        return;
+                        throw ControlException("Not an even number of characters.");
                     }
                 }
 
-                emit out("Transmitting...\nRaw data: " + utils::readableByteArray(message.toHex()));
+                emit out("Transmitting...\nRaw data: " + utils::readableByteArray(message.toHex()) + "\n");
                 port_->transmit(message);
             }
             else
