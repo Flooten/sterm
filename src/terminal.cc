@@ -26,6 +26,7 @@ Terminal::Terminal(QWidget *parent)
     connect(ui->lineEdit_command, SIGNAL(returnPressed()), this, SLOT(parseInput()));
     connect(ui->lineEdit_command, SIGNAL(editingFinished()), this, SLOT(resetCurrentLine()));
     connect(control_, SIGNAL(out(QString)), this, SLOT(out(QString)));
+    connect(control_, SIGNAL(clear()), this, SLOT(clear()));
 
     ui->lineEdit_command->installEventFilter(this);
 
@@ -78,7 +79,7 @@ void Terminal::parseInput()
 /* Skriver till terminalfönstret */
 void Terminal::out(const QString& str)
 {
-    ui->textEdit->append(str + '\n');
+    ui->textEdit->append(str);// + '\n');
 }
 
 /* Filtrera knapptryckningar */
@@ -153,4 +154,10 @@ void Terminal::resetCurrentLine()
 {
     history_reset_ = true;
     current_line_ = 0;
+}
+
+/* Clears the terminal */
+void Terminal::clear()
+{
+    ui->textEdit->clear();
 }

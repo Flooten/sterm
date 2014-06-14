@@ -33,6 +33,7 @@ private slots:
     void parseInput();
     void out(const QString& str);
     void resetCurrentLine();
+    void clear();
 };
 
 #endif // TERMINAL_H

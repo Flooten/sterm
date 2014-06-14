@@ -35,6 +35,9 @@ void Control::parseInput(const UserInput& input)
     QString command = input.command();
     QStringList arguments = input.arguments();
 
+    if (static_mode_)
+        emit clear();
+
     if (command == "help")
     {
         if (arguments.isEmpty())
@@ -122,12 +125,14 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "status")
     {
+        emit out(QString("Port Status:\n") +
+                 QString("------------"));
         emit out("Port name: \t\t" + port_->portName() +
                  "\nPort status:\t" + port_->state() +
                  "\nBaud rate: \t\t" + utils::toString(port_->baudRate()) +
                  "\nData bits: \t\t" + utils::toString(port_->dataBits()) +
                  "\nParity: \t\t" + utils::toString(port_->parity()) +
-                 "\nStop bits: \t\t" + utils::toString(port_->stopBits()));
+                 "\nStop bits: \t\t" + utils::toString(port_->stopBits()) + "\n");
     }
     else if (command == "set")
     {
@@ -170,22 +175,50 @@ void Control::parseInput(const UserInput& input)
             emit out("Setting number of stop bits to " + value + ".");
         }
     }
-    else if (command == "info")
+    else if (command == "lp")
     {
-        QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+        QListIterator<QSerialPortInfo> i(QSerialPortInfo::availablePorts());
 
-        QListIterator<QSerialPortInfo> i(ports);
+        emit out(QString("No.\tName:\tStatus:\n") +
+                 QString("---\t-----\t-------"));
+
+        char index = 1;
 
         while (i.hasNext())
         {
-            emit out(i.next().portName());
+            QSerialPortInfo info = i.next();
+            QString s;
+
+            if (info.isBusy())
+                s = QString("In Use");
+            else
+                s = QString("Available");
+
+            emit out(QString::number(index) + QString(".\t") + info.portName() + "\t" + s);
+
+            ++index;
+        }
+
+        emit out("");
+    }
+    else if (command == "autoclear")
+    {
+        if (static_mode_)
+        {
+            static_mode_ = false;
+            emit out("Disabling autoclearing of the terminal.\n");
+        }
+        else
+        {
+            static_mode_ = true;
+            emit out("Enabling autoclearing of the terminal.\n");
         }
     }
 }
 
 void Control::printWelcomeMessage()
 {
-    emit out(sterm_settings_->text("welcome_message"));
+    emit out(sterm_settings_->text("welcome_message") + '\n');
 }
 
 /* Skriver ut innehållet i data */

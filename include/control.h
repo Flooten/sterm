@@ -33,8 +33,9 @@ private:
     XmlControl* port_settings_;
     XmlControl* sterm_settings_;
     QByteArray data_;
-
     QTimer* timer_;
+
+    bool static_mode_ = false;
 
     const QString PORT_SETTINGS_ = "port_settings.xml";
     const QString STERM_SETTINGS_ = ":/data/resources/sterm.xml";
@@ -44,6 +45,7 @@ private:
 
 signals:
     void out(const QString& str);
+    void clear();
 
 private slots:
     void readData();

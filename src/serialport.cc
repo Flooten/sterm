@@ -85,9 +85,9 @@ QSerialPort::StopBits SerialPort::stopBits() const
 QString SerialPort::state() const
 {
     if (port_->isOpen())
-        return "OPEN";
+        return "Open";
     else
-        return "CLOSED";
+        return "Closed";
 }
 
 /* Setters */
