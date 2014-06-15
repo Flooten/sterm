@@ -332,7 +332,7 @@ void Control::parseInput(const UserInput& input)
             int index = 1;
             bool found = false;
 
-            while(i.hasNext())
+            while (i.hasNext())
             {
                 i.next();
 
@@ -369,6 +369,82 @@ void Control::printData(const QByteArray& data)
              "Hex:\t" + utils::readableByteArray(data.toHex()));
 }
 
+/* Function to analyze the received data */
+void Control::parseData(const QByteArray& data)
+{
+    // Call and response
+    QMapIterator<QString, QString> i(*call_response_map_);
+
+    while (i.hasNext())
+    {
+        i.next();
+
+        QString call = i.key();
+
+        if (call.startsWith("0x"))
+        {
+            // Interpret call as hexadecimal
+            call.remove("0x");
+
+            QByteArray call_ba;
+
+            if (call.length() % 2 == 0)
+            {
+                // Jämnt antal tecken.
+                for (int i = 0; i < call.length(); i += 2)
+                {
+                    bool partial_ok;
+                    QString partial_string = call.mid(i, 2);
+
+                    int partial_hex = partial_string.toInt(&partial_ok, 16);
+
+                    if (partial_ok)
+                    {
+                        call_ba.append(partial_hex);
+                    }
+                    else
+                    {
+                        throw ControlException("Error: Not a valid hex input.\n");
+                    }
+                }
+            }
+            else
+            {
+                throw ControlException("Error: Not an even number of characters.\n");
+            }
+
+            if (data.contains(call_ba))
+            {
+                // Complete call sequence found -> respond
+                parseInput(UserInput("transmit " + i.value()));
+            }
+        }
+        else if (call.startsWith("0b"))
+        {
+            // Interpret call as binary
+            call.remove("0b");
+            // TO BE IMPLEMENTED
+        }
+        else
+        {
+            // Interpret call as ASCII
+
+            if (data.contains(i.key().toLocal8Bit()))
+            {
+                // Complete call sequence found -> respond
+                parseInput(UserInput("transmit " + i.value()));
+            }
+        }
+    }
+
+    // Custom parse code here
+
+
+    // Print the received data
+    printData(data_);
+    data_.clear();
+}
+
 /*
  *  Private slots
  */
@@ -380,9 +456,7 @@ void Control::readData()
     {
         data_.append(port_->readAll());
 
-        printData(data_);
-
-        data_.clear();
+        parseData(data_);
     }
 }
 

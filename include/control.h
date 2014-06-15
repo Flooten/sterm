@@ -45,6 +45,7 @@ private:
     const int TIMER_VALUE = 500;
 
     void printData(const QByteArray& data);
+    void parseData(const QByteArray& data);
 
 
 signals:

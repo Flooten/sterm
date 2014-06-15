@@ -5,20 +5,23 @@ Type 'help' for a list of available commands.</welcome_message>
 
 <help_general>Available commands:
 -------------------
-autoclear               : Toggles automatic clearing of the terminal before each new input.
-clear                   : Clears the terminal.
-close                   : Closes the serial port.
-exit                    : Exits the application.
-help                    : Prints this message.
-help (command)          : Prints the help text for (command) if available.
-lp                      : Lists the available ports on the system.
-open                    : Opens the serial port.
-read (filename)         : Reads the file (filename) and interprets every line as entered commands.
-repeat (stop/freq) (cmd): Repeats the command (cmd) with the frequency specified by (freq). The command
-                        : 'repeat stop' halts the repetition.
-set (var) (val)         : Sets the value of the varialble (var) to (val).
-status                  : Provides a short status summary of the connection.
-transmit/tmit (msg)     : Transmit the message (msg).</help_general>
+autoclear                   : Toggles automatic clearing of the terminal before each new input.
+clear                       : Clears the terminal.
+close                       : Closes the serial port.
+exit                        : Exits the application.
+help                        : Prints this message.
+help (command)              : Prints the help text for (command) if available.
+lp                          : Lists the available ports on the system.
+lr                          : Lists the calls and responses currently active.
+open                        : Opens the serial port.
+read (filename)             : Reads the file (filename) and interprets every line as entered commands.
+remove response (index)     : Removes the response associated with (index), given by the command 'lr'.
+repeat (stop/freq) (cmd)    : Repeats the command (cmd) with the frequency specified by (freq). The command
+                            : 'repeat stop' halts the repetition.
+respond (call) (response)   : Adds the response (response) to the received data pattern specified in (call).
+set (var) (val)             : Sets the value of the varialble (var) to (val).
+status                      : Provides a short status summary of the connection.
+transmit/tmit (msg)         : Transmit the message (msg).</help_general>
 
 <help_set>set (var) (val)     : Sets the value of the varialble (var) to (val).
 
