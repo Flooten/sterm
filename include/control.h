@@ -36,6 +36,7 @@ private:
     QTimer* timer_;
     QTimer* repeat_timer_;
     UserInput* repeated_input_;
+    QMap<QString, QString>* call_response_map_;
 
     bool autoclear_ = false;
 
@@ -44,6 +45,7 @@ private:
     const int TIMER_VALUE = 500;
 
     void printData(const QByteArray& data);
+
 
 signals:
     void out(const QString& str);

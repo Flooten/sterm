@@ -10,6 +10,7 @@ Control::Control(QObject* parent)
     , timer_(new QTimer())
     , repeat_timer_(new QTimer())
     , repeated_input_(new UserInput(""))
+    , call_response_map_(new QMap<QString, QString>)
 {
     sterm_settings_ = new XmlControl(STERM_SETTINGS_);
 
@@ -33,6 +34,7 @@ Control::~Control()
     delete timer_;
     delete repeat_timer_;
     delete repeated_input_;
+    delete call_response_map_;
     delete port_;
 }
 
@@ -280,8 +282,76 @@ void Control::parseInput(const UserInput& input)
     {
         // Look for the message in argument 0.
         // If found, respond with argument 1.
+        QString call = arguments.at(0);
+        QString response = arguments.at(1);
 
-        emit out("Response added. Responding to " + arguments.at(0) + " with " + arguments.at(1) + ".\n");
+        if (call_response_map_->contains(call))
+            throw ControlException("A response for that call is already defined.");
+
+        call_response_map_->insert(call, response);
+
+        emit out("Response added. Responding to " + call + " with " + response + ".\n");
+    }
+    else if (command == "lr")
+    {
+        // List calls and responses
+        emit out(QString("No.\tCall:\tResponse:\n") +
+                 QString("---\t-----\t---------"));
+
+        if (call_response_map_->isEmpty())
+            throw ControlException("No responses defined.\n");
+
+
+        QMapIterator<QString, QString> i(*call_response_map_);
+
+        int index = 1;
+
+        while (i.hasNext())
+        {
+            i.next();
+            emit out(QString::number(index) + ".\t" + i.key() + "\t" + i.value());
+            ++index;
+        }
+
+        emit out("");
+    }
+    else if (command == "remove")
+    {
+        QString property = arguments.at(0);
+
+        if (property == "response")
+        {
+            bool ok;
+            int target_index = arguments.at(1).toInt(&ok, 10);
+
+            if (!ok)
+                throw ControlException("Error converting the index to an integer.\n");
+
+            QMapIterator<QString, QString> i(*call_response_map_);
+
+            int index = 1;
+            bool found = false;
+
+            while(i.hasNext())
+            {
+                i.next();
+
+                if (index == target_index)
+                {
+                    emit out("Removed response " + QString::number(target_index) + ". '" + i.key() + "' -> '" + i.value() + "'\n");
+                    call_response_map_->remove(i.key());
+                    found = true;
+                    break;
+                }
+                else
+                {
+                    ++index;
+                }
+            }
+
+            if (!found)
+                throw ControlException("Index out of range.");
+        }
     }
 }
 

@@ -56,6 +56,8 @@ void UserInput::addAllowedInput()
     allowed_input_.push_back(QRegExp("autoclear(\\s+)?"));
     allowed_input_.push_back(QRegExp("repeat\\s+((stop)|([0-9]+))((\\s+\\S+)+)?"));
     allowed_input_.push_back(QRegExp("respond\\s+\\S+\\s+\\S+"));
+    allowed_input_.push_back(QRegExp("lr(\\s+)?"));
+    allowed_input_.push_back(QRegExp("remove\\s+(response)\\s+[0-9]+(\\s+)?"));
 }
 
 void UserInput::validateInput(QString& input)
