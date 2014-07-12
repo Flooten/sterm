@@ -4,6 +4,7 @@
 #include "serialport.h"
 #include "xmlcontrol.h"
 #include "userinput.h"
+#include "messagefilter.h"
 
 #include <QObject>
 #include <QString>
@@ -33,19 +34,25 @@ private:
     XmlControl* port_settings_;
     XmlControl* sterm_settings_;
     QByteArray data_;
-    QTimer* timer_;
+    MessageFilter* mfilter_;
     QTimer* repeat_timer_;
+    QTimer* report_lock_timer_;
     UserInput* repeated_input_;
     QMap<QString, QString>* call_response_map_;
 
     bool autoclear_ = false;
+    bool report_locked_ = false;
+    bool constructing_ = false;
+    int report_frequency_ = 300;
 
     const QString PORT_SETTINGS_ = "port_settings.xml";
     const QString STERM_SETTINGS_ = ":/data/resources/sterm.xml";
     const int TIMER_VALUE = 500;
 
+    void filterData(const QByteArray& data);
     void printData(const QByteArray& data);
     void parseData(const QByteArray& data);
+    void parseCallResponse(const QByteArray& data);
 
 
 signals:
@@ -55,6 +62,7 @@ signals:
 private slots:
     void readData();
     void repeatInput();
+    void reportUnlock();
 };
 
 #endif // CONTROL_H

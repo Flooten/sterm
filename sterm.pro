@@ -22,7 +22,8 @@ SOURCES += \
     src/serialport.cc \
     src/control.cc \
     src/xmlcontrol.cc \
-    src/serialport_utils.cc
+    src/serialport_utils.cc \
+    src/messagefilter.cc
 
 HEADERS  += \
     include/terminal.h \
@@ -30,7 +31,8 @@ HEADERS  += \
     include/serialport.h \
     include/control.h \
     include/xmlcontrol.h \
-    include/serialport_utils.h
+    include/serialport_utils.h \
+    include/messagefilter.h
 
 FORMS    += \
     forms/terminal.ui

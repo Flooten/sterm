@@ -154,4 +154,45 @@ namespace utils
 
         return str;
     }
+
+    /* Hexadecimal data in ASCII interpreted to QByteArray */
+    QByteArray asciiToHex(const QString& str)
+    {
+        QString str_tmp = str;
+
+        if (str.startsWith("0x"))
+        {
+            str_tmp.remove("0x");
+        }
+
+        QByteArray ba;
+
+        if (str_tmp.length() % 2 == 0)
+        {
+            // Jämnt antal tecken.
+            for (int i = 0; i < str_tmp.length(); i += 2)
+            {
+                bool partial_ok;
+                QString partial_string = str_tmp.mid(i, 2);
+
+                int partial_hex = partial_string.toInt(&partial_ok, 16);
+
+                if (partial_ok)
+                {
+                    ba.append(partial_hex);
+                }
+                else
+                {
+                    return QByteArray();
+                }
+            }
+        }
+        else
+        {
+            return QByteArray();
+        }
+
+        return ba;
+    }
+
 }

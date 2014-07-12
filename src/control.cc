@@ -7,8 +7,9 @@
 
 Control::Control(QObject* parent)
     : QObject(parent)
-    , timer_(new QTimer())
+    , mfilter_(new MessageFilter())
     , repeat_timer_(new QTimer())
+    , report_lock_timer_(new QTimer())
     , repeated_input_(new UserInput(""))
     , call_response_map_(new QMap<QString, QString>)
 {
@@ -22,19 +23,21 @@ Control::Control(QObject* parent)
                            port_settings_->attributeValue("parity", "value"),
                            port_settings_->attributeValue("stop-bits", "value"));
 
-    connect(timer_, SIGNAL(timeout()), this, SLOT(readData()));
+    connect(port_, SIGNAL(readyRead()), this, SLOT(readData()));
+    connect(report_lock_timer_, SIGNAL(timeout()), this, SLOT(reportUnlock()));
     connect(repeat_timer_, SIGNAL(timeout()), this, SLOT(repeatInput()));
 
-    timer_->start(TIMER_VALUE);
+    report_lock_timer_->start(round(1000 / report_frequency_));
 }
 
 Control::~Control()
 {
     delete port_settings_;
-    delete timer_;
     delete repeat_timer_;
+    delete report_lock_timer_;
     delete repeated_input_;
     delete call_response_map_;
+    delete mfilter_;
     delete port_;
 }
 
@@ -115,6 +118,11 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "open")
     {
+        if (!arguments.isEmpty())
+        {
+            parseInput(UserInput("set port-name " + arguments.at(0)));
+        }
+
         if (port_->open())
             emit out("Port " + port_->portName() + " opened.\n");
         else
@@ -199,6 +207,19 @@ void Control::parseInput(const UserInput& input)
             emit out("Setting number of stop bits to " + value + ".\n");
         }
     }
+    else if (command == "tset")
+    {
+        QString property = arguments.at(0);
+        QString value = arguments.at(1);
+
+        if (property == "report-frequency")
+        {
+            // Update report_frequency_
+            // Conversion will always be successful because of RegExp verified user input
+            report_frequency_ = value.toInt();
+            report_lock_timer_->start(round(1000 / report_frequency_));
+        }
+    }
     else if (command == "lp")
     {
         QListIterator<QSerialPortInfo> i(QSerialPortInfo::availablePorts());
@@ -278,7 +299,7 @@ void Control::parseInput(const UserInput& input)
             emit out("Repeating '" + arguments.join(" ") + "' with frequency " + QString::number(value) + " Hz.\n");
         }
     }
-    else if (command == "respond")
+    else if (command == "respond" || command == "re")
     {
         // Look for the message in argument 0.
         // If found, respond with argument 1.
@@ -315,11 +336,11 @@ void Control::parseInput(const UserInput& input)
 
         emit out("");
     }
-    else if (command == "remove")
+    else if (command == "remove" || command == "rm")
     {
         QString property = arguments.at(0);
 
-        if (property == "response")
+        if (property == "response" || property == "re")
         {
             bool ok;
             int target_index = arguments.at(1).toInt(&ok, 10);
@@ -353,26 +374,154 @@ void Control::parseInput(const UserInput& input)
                 throw ControlException("Index out of range.");
         }
     }
-}
+    else if (command == "filter")
+    {
+        QString type = arguments.at(0);
 
+        if (type == "sl")
+        {
+            // Setup SOM + length message filter
+            mfilter_->setStartOfMessage(utils::asciiToHex(arguments.at(1)));
+            mfilter_->setMessageLength(arguments.at(2).toInt());
+
+            if (mfilter_->isValid())
+                emit out(QString("Successfully set up message filter:\n") +
+                         QString("-----------------------------------\n") +
+                         QString("Start of message:\t") + QString(mfilter_->startOfMessage()) + "\n" +
+                         QString("Message length:\t") + QString::number(mfilter_->message_length()) + "\n");
+        }
+        else if (type == "se")
+        {
+            // Setup SOM + EOM message filter
+        }
+    }
+}
 
 void Control::printWelcomeMessage()
 {
     emit out(sterm_settings_->text("welcome_message") + '\n');
 }
 
+/* If defined, applies the filter mfilter_ to the
+ * received data and forwards the result to parseData() */
+void Control::filterData(const QByteArray &data)
+{
+    // Construct messages if filter is active
+    if (mfilter_->isValid())
+    {
+        QByteArray buffer = data;
+
+        switch(mfilter_->type())
+        {
+        case MessageFilter::FilterType::SOMLENGTH:
+            // Construct message of predefined length
+            while (buffer.length() > 0)
+            {
+                if (constructing_)
+                {
+                    // # Remaining bytes
+                    int remainder = mfilter_->message_length() - data_.length();
+
+                    // Currently constructing a message
+                    if (buffer.length() >= remainder)
+                    {
+                        // Complete remainder found
+                        data_.append(buffer.mid(0, remainder));
+                        buffer.remove(0, remainder);
+                        constructing_ = false;
+
+                        // Forward to parsing
+                        parseData(data_);
+                        data_.clear();
+                    }
+                    else
+                    {
+                        // Everything in ba belongs to the message under construction
+                        data_.append(buffer);
+                        buffer.clear();
+                    }
+                }
+                else
+                {
+                    // Look for start of message, discard other data
+                    int index = buffer.indexOf(mfilter_->startOfMessage());
+
+                    if (index != -1)
+                    {
+                        // SOM found, discard prepended data unless index = 0
+
+                        if (index != 0)
+                        {
+                            // Discard data
+                            buffer.remove(0, index);
+                        }
+
+                        // SOM is now @ index 0
+                        int message_length = mfilter_->message_length();
+
+                        if (buffer.length() >= message_length)
+                        {
+                            // Complete message in buffer, forward to parsing
+                            parseData(buffer.mid(0, message_length));
+                            buffer.remove(0, message_length);
+                        }
+                        else
+                        {
+                            // Incomplete message in buffer, start construction
+                            data_.append(buffer);
+                            buffer.clear();
+                            constructing_ = true;
+                        }
+                    }
+                    else
+                    {
+                        // Buffer filled with undesired data, discard
+                        buffer.clear();
+                    }
+                }
+            }
+            break;
+
+        case MessageFilter::FilterType::SOMEOM:
+            break;
+
+        default:
+            break;
+        }
+
+    }
+}
+
 /* Prints the contents of data */
 void Control::printData(const QByteArray& data)
 {
-    emit out("Received " + QString::number(data.length()) + " bytes." + "\n" +
-             "ASCII:\t" + data + "\n" +
-             "Hex:\t" + utils::readableByteArray(data.toHex()));
+    if (!report_locked_)
+    {
+        emit out("Received " + QString::number(data.length()) + " bytes." + "\n" +
+                 "ASCII:\t" + data + "\n" +
+                 "Hex:\t" + utils::readableByteArray(data.toHex()) + "\n");
+
+        // Lock terminal update
+        report_locked_ = true;
+    }
 }
 
 /* Function to analyze the received data */
 void Control::parseData(const QByteArray& data)
 {
+    // CUSTOM PARSE CODE HERE
+
+
     // Call and response
+    parseCallResponse(data);
+
+    // Print the received data
+    printData(data);
+}
+
+/* Function to respond to user defined calls in data */
+void Control::parseCallResponse(const QByteArray& data)
+{
     QMapIterator<QString, QString> i(*call_response_map_);
 
     while (i.hasNext())
@@ -413,10 +562,13 @@ void Control::parseData(const QByteArray& data)
                 throw ControlException("Error: Not an even number of characters.\n");
             }
 
-            if (data.contains(call_ba))
+            // Search through the message for registred calls
+            int index = data.indexOf(call_ba);
+            while (index != -1)
             {
                 // Complete call sequence found -> respond
                 parseInput(UserInput("transmit " + i.value()));
+                index = data.indexOf(call_ba, index + call_ba.length());
             }
         }
         else if (call.startsWith("0b"))
@@ -436,13 +588,6 @@ void Control::parseData(const QByteArray& data)
             }
         }
     }
-
-    // Custom parse code here
-
-
-    // Print the received data
-    printData(data_);
-    data_.clear();
 }
 
 /*
@@ -452,12 +597,7 @@ void Control::parseData(const QByteArray& data)
 /* Reads data from the port buffer and prints */
 void Control::readData()
 {
-    if (port_->isOpen() && port_->bytesAvailable() != 0)
-    {
-        data_.append(port_->readAll());
-
-        parseData(data_);
-    }
+    filterData(port_->readAll());
 }
 
 /* Repeats the input in repeated_input_ as long as repeat_timer_ is running */
@@ -465,4 +605,10 @@ void Control::repeatInput()
 {
     try { parseInput(*repeated_input_); }
     catch (std::logic_error& e) { emit out(e.what()); }
+}
+
+/* Unlocks the ability of printData() to write to the terminal */
+void Control::reportUnlock()
+{
+    report_locked_ = false;
 }

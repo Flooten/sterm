@@ -46,7 +46,7 @@ void UserInput::addAllowedInput()
 {
     allowed_input_.push_back(QRegExp("help(\\s+)?(transmit|open|close|exit|status|set)?"));
     allowed_input_.push_back(QRegExp("(transmit|tmit)(\\s+\\S+)+"));
-    allowed_input_.push_back(QRegExp("open(\\s+)?"));
+    allowed_input_.push_back(QRegExp("open(\\s+\\S+)?"));
     allowed_input_.push_back(QRegExp("close(\\s+)?"));
     allowed_input_.push_back(QRegExp("exit(\\s+)?"));
     allowed_input_.push_back(QRegExp("status(\\s+)?"));
@@ -55,9 +55,12 @@ void UserInput::addAllowedInput()
     allowed_input_.push_back(QRegExp("lp(\\s+)?"));
     allowed_input_.push_back(QRegExp("autoclear(\\s+)?"));
     allowed_input_.push_back(QRegExp("repeat\\s+((stop)|([0-9]+))((\\s+\\S+)+)?"));
-    allowed_input_.push_back(QRegExp("respond\\s+\\S+\\s+\\S+"));
+    allowed_input_.push_back(QRegExp("(respond|re)\\s+\\S+\\s+\\S+"));
     allowed_input_.push_back(QRegExp("lr(\\s+)?"));
-    allowed_input_.push_back(QRegExp("remove\\s+(response)\\s+[0-9]+(\\s+)?"));
+    allowed_input_.push_back(QRegExp("(remove|rm)\\s+(response|re)\\s+[0-9]+(\\s+)?"));
+    allowed_input_.push_back(QRegExp("tset\\s+(report-frequency)\\s+[0-9]+"));
+    allowed_input_.push_back(QRegExp("filter(\\s+)(sl)(\\s+\\S+)\\s+[0-9]+"));
+    allowed_input_.push_back(QRegExp("filter(\\s+)(se)(\\s+\\S+)(\\s+\\S+)"));
 }
 
 void UserInput::validateInput(QString& input)

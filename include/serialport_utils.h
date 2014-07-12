@@ -21,6 +21,8 @@ namespace utils
 
     // Stycka upp en QByteArray i ett mer läsligt format
     QString readableByteArray(const QByteArray& ba);
+
+    QByteArray asciiToHex(const QString& str);
 }
 
 #endif // SERIALPORT_UTILS_H

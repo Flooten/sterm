@@ -79,7 +79,7 @@ void Terminal::parseInput()
 /* Skriver till terminalfönstret */
 void Terminal::out(const QString& str)
 {
-    ui->textEdit->append(str);// + '\n');
+    ui->textEdit->append(str);
 }
 
 /* Filtrera knapptryckningar */
