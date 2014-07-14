@@ -13,6 +13,7 @@ help                        : Prints this message.
 help (command)              : Prints the help text for (command) if available.
 lp                          : Lists the available ports on the system.
 lr                          : Lists the calls and responses currently active.
+lf                          : Lists the filter specification, if one exists.
 open                        : Opens the serial port.
 read (filename)             : Reads the file (filename) and interprets every line as entered commands.
 remove response (index)     : Removes the response associated with (index), given by the command 'lr'.

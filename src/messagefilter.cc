@@ -50,6 +50,14 @@ void MessageFilter::setEndOfMessage(const QByteArray &ba)
     validate();
 }
 
+void MessageFilter::clear()
+{
+    start_of_message_.clear();
+    end_of_message_.clear();
+    message_length_ = -1;
+    type_ = FilterType::INVALID;
+}
+
 void MessageFilter::validate()
 {
     if (start_of_message_.isEmpty())

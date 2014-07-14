@@ -33,11 +33,11 @@ Control::Control(QObject* parent)
 Control::~Control()
 {
     delete port_settings_;
+    delete mfilter_;
     delete repeat_timer_;
     delete report_lock_timer_;
     delete repeated_input_;
     delete call_response_map_;
-    delete mfilter_;
     delete port_;
 }
 
@@ -381,18 +381,59 @@ void Control::parseInput(const UserInput& input)
         if (type == "sl")
         {
             // Setup SOM + length message filter
-            mfilter_->setStartOfMessage(utils::asciiToHex(arguments.at(1)));
+
+            QString som = arguments.at(1);
+
+            if (som.startsWith("0x"))
+                mfilter_->setStartOfMessage(utils::asciiToHex(som));
+            else
+                mfilter_->setStartOfMessage(som.toLocal8Bit());
+
             mfilter_->setMessageLength(arguments.at(2).toInt());
 
             if (mfilter_->isValid())
                 emit out(QString("Successfully set up message filter:\n") +
-                         QString("-----------------------------------\n") +
-                         QString("Start of message:\t") + QString(mfilter_->startOfMessage()) + "\n" +
+                         QString("Start-of-message:\t") + QString(mfilter_->startOfMessage()) + "\n" +
                          QString("Message length:\t") + QString::number(mfilter_->message_length()) + "\n");
         }
         else if (type == "se")
         {
             // Setup SOM + EOM message filter
+        }
+        else if (type == "remove")
+        {
+            mfilter_->clear();
+        }
+    }
+    else if (command == "lf")
+    {
+        // List active filter specification
+        emit out(QString("Type:\t\tSoM:\t\tLength/EoM:\n") +
+                 QString("-----\t\t----\t\t-----------"));
+
+        if (mfilter_->isValid())
+        {
+            QString type;
+            switch (mfilter_->type())
+            {
+            case MessageFilter::FilterType::SOMLENGTH:
+                type = "SoM + length";
+                break;
+
+            case MessageFilter::FilterType::SOMEOM:
+                type = "SoM + EoM";
+                break;
+
+            default:
+                type = "Invalid";
+                break;
+            }
+
+            emit out(type + "\t0x" + mfilter_->startOfMessage().toHex() + "\t" + QString::number(mfilter_->message_length()));
+        }
+        else
+        {
+            emit out("No filter specified.\n");
         }
     }
 }
@@ -404,9 +445,9 @@ void Control::printWelcomeMessage()
 
 /* If defined, applies the filter mfilter_ to the
  * received data and forwards the result to parseData() */
-void Control::filterData(const QByteArray &data)
+void Control::filterData(const QByteArray& data)
 {
-    // Construct messages if filter is active
+    // Construct messages if filter is active, otherwise print the data
     if (mfilter_->isValid())
     {
         QByteArray buffer = data;
@@ -489,6 +530,14 @@ void Control::filterData(const QByteArray &data)
             break;
         }
 
+    }
+    else
+    {
+        // Call and response
+        parseCallResponse(data);
+
+        // Print the received data
+        printData(data);
     }
 }
 

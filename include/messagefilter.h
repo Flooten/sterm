@@ -24,6 +24,7 @@ public:
     void setMessageLength(int length);
     void setStartOfMessage(const QByteArray& ba);
     void setEndOfMessage(const QByteArray& ba);
+    void clear();
 
 private:
     int message_length_ = -1;

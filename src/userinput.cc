@@ -61,6 +61,8 @@ void UserInput::addAllowedInput()
     allowed_input_.push_back(QRegExp("tset\\s+(report-frequency)\\s+[0-9]+"));
     allowed_input_.push_back(QRegExp("filter(\\s+)(sl)(\\s+\\S+)\\s+[0-9]+"));
     allowed_input_.push_back(QRegExp("filter(\\s+)(se)(\\s+\\S+)(\\s+\\S+)"));
+    allowed_input_.push_back(QRegExp("filter\\s+(remove)(\\s+)?"));
+    allowed_input_.push_back(QRegExp("lf(\\s+)?"));
 }
 
 void UserInput::validateInput(QString& input)
