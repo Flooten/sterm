@@ -41,7 +41,7 @@ Control::~Control()
     delete port_;
 }
 
-/* Parse user input*/
+/* Function to parse new user input*/
 void Control::parseInput(const UserInput& input)
 {
     QString command = input.command();
@@ -408,6 +408,19 @@ void Control::parseInput(const UserInput& input)
         else if (type == "se")
         {
             // Setup SOM + EOM message filter
+            QString som = arguments.at(1);
+
+            if (som.startsWith("0x"))
+                mfilter_->setStartOfMessage(utils::asciiToHex(som));
+            else
+                mfilter_->setStartOfMessage(som.toLocal8Bit());
+
+            QString eom = arguments.at(2);
+
+            if (eom.startsWith("0x"))
+                mfilter_->setEndOfMessage(utils::asciiToHex(eom));
+            else
+                mfilter_->setEndOfMessage(eom.toLocal8Bit());
         }
         else if (type == "remove")
         {
@@ -416,28 +429,27 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "lf")
     {
+        QStringList lst;
+        lst << "Type:" << "SoM:" << "Length/EoM:\n"
+            << "-----" << "----" << "-----------\n";
+
         if (mfilter_->isValid())
         {
             QString type;
             switch (mfilter_->type())
             {
             case MessageFilter::FilterType::SOMLENGTH:
-                type = "SoM + length";
+                lst << "SoM + length" << "0x" + mfilter_->startOfMessage().toHex() << QString::number(mfilter_->message_length()) + "\n";
                 break;
 
             case MessageFilter::FilterType::SOMEOM:
-                type = "SoM + EoM";
+                lst << "SoM + EoM" << "0x" + mfilter_->startOfMessage().toHex() << "0x" +  mfilter_->endOfMessage().toHex() + "\n";
                 break;
 
             default:
                 type = "Invalid";
                 break;
             }
-
-            QStringList lst;
-            lst << "Type:" << "SoM:" << "Length/EoM:\n"
-                << "-----" << "----" << "-----------\n"
-                << type << "0x" + mfilter_->startOfMessage().toHex() <<  QString::number(mfilter_->message_length()) + "\n";
 
             emit out(lst);
         }
@@ -448,6 +460,7 @@ void Control::parseInput(const UserInput& input)
     }
 }
 
+/* Function to print the welcome message */
 void Control::printWelcomeMessage()
 {
     emit out(sterm_settings_->text("welcome_message") + '\n');
@@ -487,7 +500,7 @@ void Control::filterData(const QByteArray& data)
                     }
                     else
                     {
-                        // Everything in ba belongs to the message under construction
+                        // Everything in buffer belongs to the message under construction
                         data_.append(buffer);
                         buffer.clear();
                     }
@@ -534,6 +547,77 @@ void Control::filterData(const QByteArray& data)
             break;
 
         case MessageFilter::FilterType::SOMEOM:
+            while (buffer.length() > 0)
+            {
+                if (constructing_)
+                {
+                    // # Remaining bytes
+                    int eom_index = buffer.indexOf(mfilter_->endOfMessage());
+
+                    // Currently constructing a message
+                    if (eom_index != -1)
+                    {
+                        // End-of-message found, complete current message.
+
+                        // Adjust for EoM of arbitrary length
+                        eom_index += mfilter_->endOfMessage().length();
+                        data_.append(buffer.left(eom_index));
+                        buffer.remove(0, eom_index);
+                        constructing_ = false;
+
+                        // Forward to parsing
+                        parseData(data_);
+                        data_.clear();
+                    }
+                    else
+                    {
+                        // Everything in buffer belongs to the message under construction
+                        data_.append(buffer);
+                        buffer.clear();
+                    }
+                }
+                else
+                {
+                    // Look for start of message, discard other data
+                    int index = buffer.indexOf(mfilter_->startOfMessage());
+
+                    if (index != -1)
+                    {
+                        // SOM found, discard prepended data unless index = 0
+
+                        if (index != 0)
+                        {
+                            // Discard data
+                            buffer.remove(0, index);
+                        }
+
+                        // SOM is now @ index 0
+                        int eom_index = buffer.indexOf(mfilter_->endOfMessage());
+
+                        if (eom_index != -1)
+                        {
+                            // Complete message in buffer, forward to parsing
+
+                            // Adjust for EoM of arbitrary length
+                            eom_index += mfilter_->endOfMessage().length();
+                            parseData(buffer.left(eom_index));
+                            buffer.remove(0, eom_index);
+                        }
+                        else
+                        {
+                            // Incomplete message in buffer, start construction
+                            data_.append(buffer);
+                            buffer.clear();
+                            constructing_ = true;
+                        }
+                    }
+                    else
+                    {
+                        // Buffer filled with undesired data, discard
+                        buffer.clear();
+                    }
+                }
+            }
             break;
 
         default:
