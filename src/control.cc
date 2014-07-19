@@ -41,6 +41,7 @@ Control::~Control()
     delete port_;
 }
 
+/* Parse user input*/
 void Control::parseInput(const UserInput& input)
 {
     QString command = input.command();
@@ -140,7 +141,7 @@ void Control::parseInput(const UserInput& input)
         else
             emit out("Unable to close port " + port_->portName() + ".\n");
     }
-    else if (command == "status")
+    else if (command == "status" || command == "stat")
     {
         QStringList lst;
 

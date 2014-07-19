@@ -49,7 +49,7 @@ void UserInput::addAllowedInput()
     allowed_input_.push_back(QRegExp("open(\\s+\\S+)?"));
     allowed_input_.push_back(QRegExp("close(\\s+)?"));
     allowed_input_.push_back(QRegExp("exit(\\s+)?"));
-    allowed_input_.push_back(QRegExp("status(\\s+)?"));
+    allowed_input_.push_back(QRegExp("(status|stat)(\\s+)?"));
     allowed_input_.push_back(QRegExp("set(\\s+)?(port-name|baud-rate|data-bits|parity|stop-bits)\\s+\\S+"));
     allowed_input_.push_back(QRegExp("clear(\\s+)?"));
     allowed_input_.push_back(QRegExp("lp(\\s+)?"));

@@ -42,7 +42,7 @@ Terminal::~Terminal()
     delete ui;    
 }
 
-/* Ta hand om ny userinput */
+/* Parse new user input */
 void Terminal::parseInput()
 {
     QString input_str = ui->lineEdit_command->text();
@@ -79,12 +79,13 @@ void Terminal::parseInput()
     ui->lineEdit_command->clear();
 }
 
-/* Skriver till terminalfönstret */
+/* Output to the terminal window */
 void Terminal::out(const QString& str)
 {
     ui->textEdit->append(str);
 }
 
+/* Support for table-style printing */
 void Terminal::out(const QStringList& lst)
 {
     // Local copy
@@ -138,7 +139,7 @@ void Terminal::out(const QStringList& lst)
     ui->textEdit->append(list.join(""));
 }
 
-/* Filtrera knapptryckningar */
+/* Filter button presses */
 bool Terminal::eventFilter(QObject* object, QEvent* event)
 {
     if (object == ui->lineEdit_command)
