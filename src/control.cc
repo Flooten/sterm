@@ -142,14 +142,18 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "status")
     {
-        emit out(QString("Port Status:\n") +
-                 QString("------------"));
-        emit out("Port name: \t\t" + port_->portName() +
-                 "\nPort status:\t" + port_->state() +
-                 "\nBaud rate: \t\t" + utils::toString(port_->baudRate()) +
-                 "\nData bits: \t\t" + utils::toString(port_->dataBits()) +
-                 "\nParity: \t\t" + utils::toString(port_->parity()) +
-                 "\nStop bits: \t\t" + utils::toString(port_->stopBits()) + "\n");
+        QStringList lst;
+
+        lst << "Property:" << "Value:\n" <<
+               "---------" << "------\n" <<
+               "Port name" << port_->portName() + "\n" <<
+               "Port status" << port_->state() + "\n" <<
+               "Baud rate" << utils::toString(port_->baudRate()) + "\n" <<
+               "Data bits" << utils::toString(port_->dataBits()) + "\n" <<
+               "Parity" << utils::toString(port_->parity()) + "\n" <<
+               "Stop bits" << utils::toString(port_->stopBits()) + "\n";
+
+        emit out(lst);
     }
     else if (command == "set")
     {
@@ -224,10 +228,12 @@ void Control::parseInput(const UserInput& input)
     {
         QListIterator<QSerialPortInfo> i(QSerialPortInfo::availablePorts());
 
-        emit out(QString("No.\tName:\tStatus:\n") +
-                 QString("---\t-----\t-------"));
-
         char index = 1;
+
+        QStringList lst;
+
+        lst << "No." << "Name:" << "Status:\n" <<
+               "---" << "-----" << "-------\n";
 
         while (i.hasNext())
         {
@@ -239,7 +245,7 @@ void Control::parseInput(const UserInput& input)
             else
                 s = QString("Available");
 
-            emit out(QString::number(index) + QString(".\t") + info.portName() + "\t" + s);
+            lst << QString::number(index) + "." << info.portName() << s + "\n";
 
             ++index;
         }
@@ -248,7 +254,7 @@ void Control::parseInput(const UserInput& input)
         if (index == 1)
             emit out("No ports available.");
 
-        emit out("");
+        emit out(lst);
     }
     else if (command == "autoclear")
     {
@@ -316,9 +322,6 @@ void Control::parseInput(const UserInput& input)
     else if (command == "lr")
     {
         // List calls and responses
-        emit out(QString("No.\tCall:\tResponse:\n") +
-                 QString("---\t-----\t---------"));
-
         if (call_response_map_->isEmpty())
             throw ControlException("No responses defined.\n");
 
@@ -327,14 +330,19 @@ void Control::parseInput(const UserInput& input)
 
         int index = 1;
 
+        QStringList lst;
+
+        lst << "No." << "Call:" << "Response:\n" <<
+               "---" << "-----" << "---------\n";
+
         while (i.hasNext())
         {
             i.next();
-            emit out(QString::number(index) + ".\t" + i.key() + "\t" + i.value());
+            lst << QString::number(index) + "." << i.key() << i.value() + "\n";
             ++index;
         }
 
-        emit out("");
+        emit out(lst);
     }
     else if (command == "remove" || command == "rm")
     {
@@ -407,10 +415,6 @@ void Control::parseInput(const UserInput& input)
     }
     else if (command == "lf")
     {
-        // List active filter specification
-        emit out(QString("Type:\t\tSoM:\t\tLength/EoM:\n") +
-                 QString("-----\t\t----\t\t-----------"));
-
         if (mfilter_->isValid())
         {
             QString type;
@@ -429,11 +433,16 @@ void Control::parseInput(const UserInput& input)
                 break;
             }
 
-            emit out(type + "\t0x" + mfilter_->startOfMessage().toHex() + "\t" + QString::number(mfilter_->message_length()));
+            QStringList lst;
+            lst << "Type:" << "SoM:" << "Length/EoM:\n"
+                << "-----" << "----" << "-----------\n"
+                << type << "0x" + mfilter_->startOfMessage().toHex() <<  QString::number(mfilter_->message_length()) + "\n";
+
+            emit out(lst);
         }
         else
         {
-            emit out("No filter specified.\n");
+            emit out("No filter defined.\n");
         }
     }
 }

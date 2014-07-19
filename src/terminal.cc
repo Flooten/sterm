@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QFile>
+#include <QStringListIterator>
+#include <vector>
 
 Terminal::Terminal(QWidget *parent)
     : QDialog(parent)
@@ -26,6 +28,7 @@ Terminal::Terminal(QWidget *parent)
     connect(ui->lineEdit_command, SIGNAL(returnPressed()), this, SLOT(parseInput()));
     connect(ui->lineEdit_command, SIGNAL(editingFinished()), this, SLOT(resetCurrentLine()));
     connect(control_, SIGNAL(out(QString)), this, SLOT(out(QString)));
+    connect(control_, SIGNAL(out(QStringList)), this, SLOT(out(QStringList)));
     connect(control_, SIGNAL(clear()), this, SLOT(clear()));
 
     ui->lineEdit_command->installEventFilter(this);
@@ -80,6 +83,59 @@ void Terminal::parseInput()
 void Terminal::out(const QString& str)
 {
     ui->textEdit->append(str);
+}
+
+void Terminal::out(const QStringList& lst)
+{
+    // Local copy
+    QStringList list(lst);
+
+    QStringListIterator i(list);
+
+    // Determine # columns
+    int columns = 1;
+
+    std::vector<int> column_sizes;
+
+    while (i.hasNext())
+    {
+        column_sizes.push_back(0);
+
+        if (i.next().contains("\n"))
+            break;
+        else
+            ++columns;
+    }
+
+    // Determine column max width
+    for (int i = 0; i < list.size(); ++i)
+    {
+        if (list.at(i).length() > column_sizes[i % columns])
+            column_sizes[i % columns] = list.at(i).length();
+    }
+
+    // Add maxlength - cell length + separator spaces to all cells
+    for (int i = 0; i < list.length(); ++i)
+    {
+        // Generate spaces
+        QString fill = "";
+
+        for (int j = 0; j < column_sizes[i % columns] + TABLE_SEP_ - list.at(i).length(); ++j)
+            fill.append(" ");
+
+        QString str = list.at(i);
+
+        if (str.contains("\n"))
+        {
+            list.replace(i, str.remove("\n") + fill + "\n");
+        }
+        else
+        {
+            list.replace(i, str + fill);
+        }
+    }
+
+    ui->textEdit->append(list.join(""));
 }
 
 /* Filtrera knapptryckningar */

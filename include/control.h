@@ -57,6 +57,7 @@ private:
 
 signals:
     void out(const QString& str);
+    void out(const QStringList& lst);
     void clear();
 
 private slots:
